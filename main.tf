@@ -1,3 +1,4 @@
+# Remote backend for storing Terraform states
 terraform {
   backend "gcs" {
   bucket  = "cultcreative-infra"
@@ -14,11 +15,52 @@ provider "google" {
 }
 
 # CultCreative Virtual Private Cloud (VPC)
-resource "google_compute_network" "cc_network" {
-  name                    = "cultcreative-vpc"
+resource "google_compute_network" "cultcreative_vpc_network" {
+  name                    = "cultcreative-vpc-network"
   auto_create_subnetworks = true
   description             = "VPC network for CultCreative"
 }
+
+# Firewall rule for HTTP
+resource "google_compute_firewall" "cultcreative_firewall_allow_http" {
+  name    = "cultcreative-firewall-allow-http"
+  network = google_compute_network.cultcreative_vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+}
+
+# Firewall rule for HTTPS
+resource "google_compute_firewall" "cultcreative_firewall_allow_https" {
+  name    = "cultcreative-firewall-allow-https"
+  network = google_compute_network.cultcreative_vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["443"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+}
+
+# Firewall rule for SSH
+resource "google_compute_firewall" "cultcreative_firewall_allow_ssh" {
+  name    = "cultcreative-firewall-allow-ssh"
+  network = google_compute_network.cultcreative_vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+}
+
+
 
 
 
