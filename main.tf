@@ -60,7 +60,25 @@ resource "google_compute_firewall" "cultcreative_firewall_allow_ssh" {
   source_ranges = ["0.0.0.0/0"]
 }
 
+# Outputs
+output "vpc_name" {
+  description = "The name of the VPC"
+  value       = google_compute_network.cultcreative_vpc_network.name
+}
 
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = google_compute_network.cultcreative_vpc_network.id
+}
+
+output "firewall_rules" {
+  description = "The names of the firewall rules"
+  value = [
+    google_compute_firewall.cultcreative_firewall_allow_http.name,
+    google_compute_firewall.cultcreative_firewall_allow_https.name,
+    google_compute_firewall.cultcreative_firewall_allow_ssh.name
+  ]
+}
 
 
 
