@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  cc-frontend:
+    container_name: cc-frontend
+    build:
+      context: ./cc-frontend
+      dockerfile: Dockerfile
+    networks:
+      - cult-creative
+
+  cc-backend:
+    container_name: cc-backend
+    build:
+      context: ./cc-backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://[USER]:[PASSWORD]@[CLOUD_SQL_IP]:5432/cult_creative
+      - baseURL=yourdomain.com
+    networks:
+      - cult-creative
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - cult-creative
+    depends_on:
+      - cc-frontend
+      - cc-backend
+
+networks:
+  cult-creative:
+    driver: bridge
