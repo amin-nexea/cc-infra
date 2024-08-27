@@ -51,7 +51,7 @@ resource "google_sql_database_instance" "cultcreative_database_instance" {
   }
 
   deletion_protection = var.db_deletion_protection
-  depends_on = [google_project_service.apis]
+  depends_on = [google_project_service.apis, time_sleep.wait_20_seconds]
 }
 
 # Outputs for SQL instance

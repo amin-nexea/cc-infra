@@ -19,7 +19,7 @@ services:
     env_file:
       - ./cc-backend/.env
     environment:
-      - DATABASE_URL=postgresql://cultcreative:4B1FABbjJ&F1B-@34.124.232.211:5432/cult_creative
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}
       - baseURL=yourdomain.com
     ports:
       - 3001

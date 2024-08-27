@@ -17,8 +17,6 @@ module "resources" {
   vpc_name                    = var.vpc_name
   vpc_auto_create_subnetworks = var.vpc_auto_create_subnetworks
   vpc_description             = var.vpc_description
-
-  # Database instance variables
   db_instance_name                      = var.db_instance_name     
   db_version                            = var.db_version 
   db_edition                            = var.db_edition  
@@ -46,6 +44,18 @@ module "resources" {
   db_name                               = var.db_name
   db_user                               = var.db_user
   db_password                           = var.db_password
+  instance_name                         = var.instance_name
+  instance_machine_type                 = var.instance_machine_type
+  instance_zone                         = var.instance_zone
+  instance_image                        = var.instance_image
+  instance_disk_size                    = var.instance_disk_size
+  instance_disk_type                    = var.instance_disk_type
+  instance_startup_script               = var.instance_startup_script
+  instance_nginx_config_path            = var.instance_nginx_config_path
+  instance_nginx_dockerfile_path        = var.instance_nginx_dockerfile_path
+  instance_docker_compose_path          = var.instance_docker_compose_path
+  instance_tags                         = var.instance_tags
+  instance_service_account_scopes       = var.instance_service_account_scopes
 }
 
 

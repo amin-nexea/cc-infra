@@ -169,4 +169,64 @@ variable "db_name" {
   type        = string
 }
 
+variable "instance_name" {
+  type        = string
+  description = "The name of the compute instance"
+}
+
+variable "instance_machine_type" {
+  type        = string
+  description = "The machine type of the compute instance"
+}
+
+variable "instance_zone" {
+  type        = string
+  description = "The zone where the compute instance will be created"
+}
+
+variable "instance_image" {
+  type        = string
+  description = "The boot disk image for the compute instance"
+}
+
+variable "instance_disk_size" {
+  type        = number
+  description = "The size of the boot disk in GB"
+}
+
+variable "instance_disk_type" {
+  type        = string
+  description = "The type of the boot disk"
+}
+
+variable "instance_startup_script" {
+  type        = string
+  description = "The path to the startup script file"
+}
+
+variable "instance_nginx_config_path" {
+  type        = string
+  description = "The path to the Nginx config file"
+}
+
+variable "instance_nginx_dockerfile_path" {
+  type        = string
+  description = "The path to the Nginx Dockerfile"
+}
+
+variable "instance_docker_compose_path" {
+  type        = string
+  description = "The path to the docker-compose.yml file"
+}
+
+variable "instance_tags" {
+  type        = list(string)
+  description = "The network tags to apply to the instance"
+}
+
+variable "instance_service_account_scopes" {
+  type        = list(string)
+  description = "The service account scopes for the instance"
+}
+
 

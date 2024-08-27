@@ -4,8 +4,6 @@ variable "apis_to_enable" {}
 variable "vpc_name" {}
 variable "vpc_auto_create_subnetworks" {}
 variable "vpc_description" {}
-
-# Database instance variables
 variable "db_instance_name" {}                   
 variable "db_version" {}                
 variable "db_edition" {}        
@@ -33,3 +31,15 @@ variable "db_record_client_address" {}
 variable "db_name" {} 
 variable "db_user" {} 
 variable "db_password" {} 
+variable "instance_name"{}                         
+variable "instance_machine_type"{}                 
+variable "instance_zone"{}                         
+variable "instance_image"{}                        
+variable "instance_disk_size"{}                    
+variable "instance_disk_type"{}                    
+variable "instance_startup_script"{}               
+variable "instance_nginx_config_path"{}            
+variable "instance_nginx_dockerfile_path"{}        
+variable "instance_docker_compose_path"{}          
+variable "instance_tags"{}                         
+variable "instance_service_account_scopes"{}       
