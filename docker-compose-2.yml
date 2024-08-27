@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.8'
 
 services:
   cc-frontend:
@@ -7,24 +7,29 @@ services:
       context: ./cc-frontend
       dockerfile: Dockerfile
     ports:
-      - 3000
+      - "3030:3030"
+    volumes:
+      - ./cc-frontend:/app
+      - /app/node_modules
     networks:
       - cult-creative
 
   cc-backend:
     container_name: cc-backend
     build:
+      target: development
       context: ./cc-backend
       dockerfile: Dockerfile
     env_file:
       - ./cc-backend/.env
-    environment:
-      - DATABASE_URL=postgresql://cultcreative:4B1FABbjJ&F1B-@34.124.232.211:5432/cult_creative
-      - baseURL=yourdomain.com
     ports:
-      - 3001
+      - "3002:3001"
+    volumes:
+      - ./cc-backend:/app
+      - /app/node_modules
     networks:
       - cult-creative
+      - db
 
   nginx:
     build:
@@ -37,10 +42,19 @@ services:
       - ./nginx:/etc/nginx/conf.d
     networks:
       - cult-creative
-    depends_on:
-      - cc-frontend
-      - cc-backend
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - cult-creative
 
 networks:
   cult-creative:
     driver: bridge
+  db:
+    name: database_database_db
+    external: true
