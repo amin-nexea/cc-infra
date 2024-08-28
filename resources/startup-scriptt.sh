@@ -1,32 +1,5 @@
-#!/bin/bash
 
-# Function for logging
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a /var/log/startup-script.log
-}
-
-log "Starting startup script"
-
-# Update and install dependencies
-log "Updating package lists"
-apt-get update >> /var/log/startup-script.log 2>&1 || log "Failed to update package lists"
-
-log "Installing dependencies"
-apt-get install -y docker.io docker-compose git >> /var/log/startup-script.log 2>&1 || log "Failed to install dependencies"
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
-source ~/.bashrc
-nvm install v20.17.0
-npm install -g yarn
 sudo chown -R $(whoami):$(whoami) /home/famintech/cultcreative/cc-backend
-
-# Start and enable Docker
-log "Starting and enabling Docker"
-systemctl start docker >> /var/log/startup-script.log 2>&1 || log "Failed to start Docker"
-systemctl enable docker >> /var/log/startup-script.log 2>&1 || log "Failed to enable Docker"
-
-log "Checking Docker service status"
-systemctl status docker >> /var/log/startup-script.log 2>&1 || log "Docker service status check failed"
-
 # Create directory structure
 log "Creating directory structure"
 cd /home/famintech/
@@ -37,6 +10,11 @@ cd /home/famintech/cultcreative || {
     log "Failed to change directory to /home/famintech/cultcreative"
     exit 1
 }
+
+
+    sudo mkdir -p /home/famintech/cultcreative/
+    sudo mkdir -p /home/famintech/cultcreative/nginx    
+
 
 # Clone repositories
 log "Cloning repositories"

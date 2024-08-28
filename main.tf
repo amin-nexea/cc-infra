@@ -56,6 +56,10 @@ module "resources" {
   instance_docker_compose_path          = var.instance_docker_compose_path
   instance_tags                         = var.instance_tags
   instance_service_account_scopes       = var.instance_service_account_scopes
+  firewall_name                         = var.firewall_name
+  firewall_protocol                     = var.firewall_protocol
+  firewall_ports                        = var.firewall_ports
+  firewall_source_ranges                = var.firewall_source_ranges
 }
 
 

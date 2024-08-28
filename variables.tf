@@ -229,4 +229,24 @@ variable "instance_service_account_scopes" {
   description = "The service account scopes for the instance"
 }
 
+variable "firewall_name" {
+  type        = string
+  description = "The name of the firewall rule"
+}
+
+variable "firewall_protocol" {
+  type        = string
+  description = "The protocol for the firewall rule"
+}
+
+variable "firewall_ports" {
+  type        = list(string)
+  description = "The ports to allow in the firewall rule"
+}
+
+variable "firewall_source_ranges" {
+  type        = list(string)
+  description = "The source IP ranges for the firewall rule"
+}
+
 

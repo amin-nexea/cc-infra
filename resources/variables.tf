@@ -43,3 +43,7 @@ variable "instance_nginx_dockerfile_path"{}
 variable "instance_docker_compose_path"{}          
 variable "instance_tags"{}                         
 variable "instance_service_account_scopes"{}       
+variable "firewall_name"{}       
+variable "firewall_protocol"{}       
+variable "firewall_ports"{}       
+variable "firewall_source_ranges"{}       
