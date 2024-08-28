@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -euo pipefail
 
 LOG_FILE="/var/log/startup-script.log"
@@ -19,61 +18,106 @@ run_command() {
 main() {
     log "Starting startup script"
 
-    USER_HOME=$(eval echo ~$USER)
-    log "User home directory: $USER_HOME"
+    # Create a new user
+    NEW_USER="cultcreative"
+    log "Creating new user: $NEW_USER"
+    useradd -m -s /bin/bash "$NEW_USER"
+    
+    # Set up sudo for the new user
+    log "Setting up sudo for $NEW_USER"
+    echo "$NEW_USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$NEW_USER
 
-    log "Updating package lists"
-    run_command sudo apt-get update
+    # Set HOME to the new user's home directory
+    export HOME="/home/$NEW_USER"
+    log "HOME directory set to: $HOME"
+
+    # Change ownership of the log file to the new user
+    chown $NEW_USER:$NEW_USER "$LOG_FILE"
+
+    # Run the rest of the script as the new user
+    su - $NEW_USER << EOF
+    log "Running as user: $(whoami)"
 
     log "Installing prerequisites"
-    run_command sudo apt-get install -y ca-certificates curl
+    sudo apt-get install -y ca-certificates curl gnupg
 
-    log "Setting up Docker repository"
-    run_command sudo install -m 0755 -d /etc/apt/keyrings
-    run_command sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    run_command sudo chmod a+r /etc/apt/keyrings/docker.asc
+    # Add Docker's official GPG key:
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-    log "Adding Docker repository to Apt sources"
+    # Add the repository to Apt sources:
     echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-      run_command sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     log "Updating package lists again"
-    run_command sudo apt-get update
+    sudo apt-get update
+
+    log "Installing Docker"
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     log "Installing NVM"
-    run_command curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
-
-    log "Sourcing NVM"
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    export NVM_DIR="\$HOME/.nvm"
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+    [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
 
     log "Installing Node.js v20.17.0"
-    run_command nvm install v20.17.0
-
-    log "Setting Node.js v20.17.0 as default"
-    run_command nvm use 20.17.0
+    nvm install v20.17.0
+    nvm use 20.17.0
 
     log "Installing Yarn globally"
-    run_command npm install -g yarn
+    npm install -g yarn
 
     log "Starting Docker service"
-    run_command sudo systemctl start docker
+    sudo systemctl start docker
 
     log "Enabling Docker service"
-    run_command sudo systemctl enable docker
+    sudo systemctl enable docker
 
     log "Checking Docker service status"
-    run_command sudo systemctl status docker
+    sudo systemctl status docker
 
-    log "Changing to user home directory"
-    cd "$USER_HOME" || {
-        log "Failed to change to $USER_HOME"
-        exit 1
-    }
+    log "Setting up project directories"
+    mkdir -p "\$HOME/cultcreative/nginx"
+
+    log "Changing to cultcreative directory"
+    cd "\$HOME/cultcreative"
+
+    log "Cloning frontend repository"
+    git clone https://github.com/NxTech4021/cc-frontend.git
+
+    log "Cloning backend repository"
+    git clone https://github.com/NxTech4021/cc-backend.git
+
+    log "Setting correct ownership for cultcreative directory"
+    sudo chown -R "\$(whoami):\$(whoami)" "\$HOME/cultcreative"
+
+    log "Setting correct ownership for backend directory"
+    sudo chown -R "\$(whoami):\$(whoami)" "\$HOME/cultcreative/cc-backend"
+
+    log "Creating temporary nginx directory"
+    mkdir -p /tmp/nginx
+
+    log "Fetching and decoding Nginx config"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-config" | base64 -d > /tmp/nginx/default.conf 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx config"
+
+l   og "Fetching and decoding Nginx Dockerfile"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-dockerfile" | base64 -d > /tmp/nginx/Dockerfile 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx Dockerfile"
+
+    log "Fetching and decoding docker-compose.yml"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/docker-compose" | base64 -d > /tmp/docker-compose.yml 2>> "$LOG_FILE" || log "Failed to fetch/decode docker-compose.yml"
+
+    log "Copying Nginx files"
+    cp /tmp/nginx/default.conf "$HOME/cultcreative/nginx/" || log "Failed to copy Nginx config"
+    cp /tmp/nginx/Dockerfile "$HOME/cultcreative/nginx/" || log "Failed to copy Nginx Dockerfile"
+
+    log "Copying docker-compose.yml"
+    cp /tmp/docker-compose.yml "$HOME/cultcreative/" || log "Failed to copy docker-compose.yml"
 
     log "Startup script completed successfully"
+EOF
 }
 
 # Run the main function
