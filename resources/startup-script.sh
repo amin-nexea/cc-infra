@@ -129,7 +129,7 @@ l   og "Fetching and decoding Nginx Dockerfile"
     envsubst < "$HOME/cultcreative/docker-compose.yml" > "$HOME/cultcreative/docker-compose.processed.yml" || log "Failed to process docker-compose.yml"
 
     log "Starting Docker Compose"
-    docker compose -f docker-compose.processed.yml up -d >> "$LOG_FILE" 2>&1 || {
+    sudo docker compose -f docker-compose.processed.yml up -d >> "$LOG_FILE" 2>&1 || {
         log "Failed to start Docker Compose. Error: $?"
     }
 
