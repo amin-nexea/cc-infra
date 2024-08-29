@@ -249,7 +249,7 @@ variable "firewall_source_ranges" {
   description = "The source IP ranges for the firewall rule"
 }
 
-variable "instance_serviceaccount_id" {
+variable "instance_service_account_id" {
   description = "The ID of the instance service account."
   type        = string
 }

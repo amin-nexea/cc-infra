@@ -8,5 +8,5 @@ resource "google_secret_manager_secret" "db_secrets" {
     }
   }
 
-  depends_on   = [time_sleep.wait_30_seconds]
+  depends_on   = [time_sleep.wait_20_seconds]
 }

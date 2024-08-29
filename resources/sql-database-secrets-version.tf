@@ -7,3 +7,4 @@ resource "google_secret_manager_secret_version" "db_secrets" {
     each.key == "db-password" ? var.db_password :
     var.db_name
   )
+}

@@ -29,9 +29,9 @@ resource "google_compute_instance" "compute_engine_instance" {
   tags = var.instance_tags
 
   service_account {
-    email  = google_service_account.instance_serviceaccount.email
+    email  = google_service_account.instance_service_account.email
     scopes = var.instance_service_account_scopes
   }
 
-  depends_on = [time_sleep.wait_30_seconds, google_service_account.instance_serviceaccount, google_secret_manager_secret.db_secrets, google_secret_manager_secret_version.db_secrets, google_secret_manager_secret_iam_member.db_secrets_access, google_project_iam_member.db_secret_accessor]
+  depends_on = [time_sleep.wait_20_seconds, google_service_account.instance_service_account, google_secret_manager_secret.db_secrets, google_secret_manager_secret_version.db_secrets, google_secret_manager_secret_iam_member.db_secrets_access]
 }
