@@ -249,4 +249,17 @@ variable "firewall_source_ranges" {
   description = "The source IP ranges for the firewall rule"
 }
 
+variable "instance_serviceaccount_id" {
+  description = "The ID of the instance service account."
+  type        = string
+}
+
+variable "db_secret_accessor_role" {
+  description = "The role of the db secret accessor"
+  type        = string
+}
+
+variable "db_secret_names" {
+  type    = set(string)
+}
 

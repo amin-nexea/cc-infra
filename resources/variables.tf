@@ -28,6 +28,8 @@ variable "db_query_insights" {}
 variable "db_query_string_length" {} 
 variable "db_record_application_tags" {} 
 variable "db_record_client_address" {} 
+variable "db_secret_accessor_role" {}
+variable "db_secret_names" {}
 variable "db_name" {} 
 variable "db_user" {} 
 variable "db_password" {} 
@@ -42,8 +44,9 @@ variable "instance_nginx_config_path"{}
 variable "instance_nginx_dockerfile_path"{}        
 variable "instance_docker_compose_path"{}          
 variable "instance_tags"{}                         
-variable "instance_service_account_scopes"{}       
+variable "instance_service_account_scopes"{}     
+variable "instance_service_account_id"{}    
 variable "firewall_name"{}       
 variable "firewall_protocol"{}       
 variable "firewall_ports"{}       
-variable "firewall_source_ranges"{}       
+variable "firewall_source_ranges"{}           

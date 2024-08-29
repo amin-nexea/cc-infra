@@ -41,6 +41,8 @@ module "resources" {
   db_query_string_length                = var.db_query_string_length  
   db_record_application_tags            = var.db_record_application_tags 
   db_record_client_address              = var.db_record_client_address
+  db_secret_accessor_role               = var.db_secret_accessor_role
+  db_secret_names                       = var.db_secret_names
   db_name                               = var.db_name
   db_user                               = var.db_user
   db_password                           = var.db_password
@@ -56,10 +58,12 @@ module "resources" {
   instance_docker_compose_path          = var.instance_docker_compose_path
   instance_tags                         = var.instance_tags
   instance_service_account_scopes       = var.instance_service_account_scopes
+  instance_service_account_id           = var.instance_service_account_id
   firewall_name                         = var.firewall_name
   firewall_protocol                     = var.firewall_protocol
   firewall_ports                        = var.firewall_ports
   firewall_source_ranges                = var.firewall_source_ranges
+
 }
 
 
