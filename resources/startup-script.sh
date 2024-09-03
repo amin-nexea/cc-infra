@@ -18,33 +18,19 @@ run_command() {
 main() {
     log "Starting startup script"
 
-    # Create a new user
-    NEW_USER="cultcreative"
-    log "Creating new user: $NEW_USER"
-    useradd -m -s /bin/bash "$NEW_USER"
-    
-    # Set up sudo for the new user
-    log "Setting up sudo for $NEW_USER"
-    echo "$NEW_USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$NEW_USER
+    TARGET_HOME="/home/amin"
 
-    # Set HOME to the new user's home directory
-    export HOME="/home/$NEW_USER"
-    log "HOME directory set to: $HOME"
+    log "Current TARGET_HOME value: $TARGET_HOME"
 
-    # Change ownership of the log file to the new user
-    chown $NEW_USER:$NEW_USER "$LOG_FILE"
-
-    # Run the rest of the script as the new user
-    su - $NEW_USER << EOF
-    log "Running as user: $(whoami)"
+    export HOME=$TARGET_HOME
 
     log "Installing prerequisites"
-    sudo apt-get install -y ca-certificates curl gnupg
+    run_command sudo apt-get install -y ca-certificates curl gnupg
 
     # Add Docker's official GPG key:
-    sudo install -m 0755 -d /etc/apt/keyrings
-    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    run_command sudo install -m 0755 -d /etc/apt/keyrings
+    run_command sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    run_command sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     # Add the repository to Apt sources:
     echo \
@@ -53,88 +39,108 @@ main() {
         sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     log "Updating package lists again"
-    sudo apt-get update
+    run_command sudo apt-get update
 
     log "Installing Docker"
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    run_command sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    log "Installing NVM"
-    export NVM_DIR="\$HOME/.nvm"
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
-    [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+    log "Installing Node.js v20.11.1 (LTS)"
+    NODE_VERSION="20.11.1"
+    ARCH="x64"
+    NODE_FILENAME="node-v${NODE_VERSION}-linux-${ARCH}.tar.xz"
+    NODE_URL="https://nodejs.org/dist/v${NODE_VERSION}/${NODE_FILENAME}"
 
-    log "Installing Node.js v20.17.0"
-    nvm install v20.17.0
-    nvm use 20.17.0
+    log "Downloading Node.js from: ${NODE_URL}"
+    if curl -fsSLO "${NODE_URL}"; then
+        log "Node.js download successful"
+    else
+        log "Error: Failed to download Node.js. URL may be incorrect or file may not exist."
+        log "Attempting to list available versions..."
+        curl -fsSL https://nodejs.org/dist/ | grep "${NODE_VERSION}"
+        return 1
+    fi
+
+    log "Extracting Node.js"
+    sudo tar -xJf "${NODE_FILENAME}" -C /usr/local --strip-components=1
+    rm "${NODE_FILENAME}"
+
+    log "Verifying Node.js installation"
+    node --version
+    npm --version
 
     log "Installing Yarn globally"
-    npm install -g yarn
+    run_command npm install -g yarn
 
     log "Starting Docker service"
-    sudo systemctl start docker
+    run_command sudo systemctl start docker
 
     log "Enabling Docker service"
-    sudo systemctl enable docker
+    run_command sudo systemctl enable docker
 
     log "Checking Docker service status"
-    sudo systemctl status docker
+    run_command sudo systemctl status docker
 
     log "Setting up project directories"
-    mkdir -p "\$HOME/cultcreative/nginx"
+    run_command mkdir -p "$TARGET_HOME/cultcreative/nginx"
 
     log "Changing to cultcreative directory"
-    cd "\$HOME/cultcreative"
+    cd "$TARGET_HOME/cultcreative"
 
     log "Cloning frontend repository"
     git clone https://github.com/NxTech4021/cc-frontend.git
 
     log "Cloning backend repository"
-    git clone https://github.com/NxTech4021/cc-backend.git
+    git clone -b testing/production https://github.com/NxTech4021/cc-backend.git
 
     log "Setting correct ownership for cultcreative directory"
-    sudo chown -R "\$(whoami):\$(whoami)" "\$HOME/cultcreative"
+    sudo chown -R amin:amin "/home/amin/cultcreative"
 
     log "Setting correct ownership for backend directory"
-    sudo chown -R "\$(whoami):\$(whoami)" "\$HOME/cultcreative/cc-backend"
+    sudo chown -R amin:amin "/home/amin/cultcreative/cc-backend"
 
     log "Creating temporary nginx directory"
-    mkdir -p /tmp/nginx
+    run_command mkdir -p /tmp/nginx
 
     log "Fetching and decoding Nginx config"
-    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-config" | base64 -d > /tmp/nginx/default.conf 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx config"
+    run_command curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-config" | base64 -d > /tmp/nginx/default.conf 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx config"
 
-l   og "Fetching and decoding Nginx Dockerfile"
-    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-dockerfile" | base64 -d > /tmp/nginx/Dockerfile 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx Dockerfile"
+    log "Fetching and decoding Nginx Dockerfile"
+    run_command curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-dockerfile" | base64 -d > /tmp/nginx/Dockerfile 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx Dockerfile"
 
     log "Fetching and decoding docker-compose.yml"
-    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/docker-compose" | base64 -d > /tmp/docker-compose.yml 2>> "$LOG_FILE" || log "Failed to fetch/decode docker-compose.yml"
+    run_command curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/docker-compose" | base64 -d > /tmp/docker-compose.yml 2>> "$LOG_FILE" || log "Failed to fetch/decode docker-compose.yml"
 
     log "Copying Nginx files"
-    cp /tmp/nginx/default.conf "$HOME/cultcreative/nginx/" || log "Failed to copy Nginx config"
-    cp /tmp/nginx/Dockerfile "$HOME/cultcreative/nginx/" || log "Failed to copy Nginx Dockerfile"
+    cp /tmp/nginx/default.conf "$TARGET_HOME/cultcreative/nginx/" || log "Failed to copy Nginx config"
+    cp /tmp/nginx/Dockerfile "$TARGET_HOME/cultcreative/nginx/" || log "Failed to copy Nginx Dockerfile"
 
     log "Copying docker-compose.yml"
-    cp /tmp/docker-compose.yml "$HOME/cultcreative/" || log "Failed to copy docker-compose.yml"
+    cp /tmp/docker-compose.yml "$TARGET_HOME/cultcreative/" || log "Failed to copy docker-compose.yml"
 
     log "Fetching secrets"
-    DB_USER=$(gcloud secrets versions access latest --secret=db-user 2>> "$LOG_FILE") || log "Failed to fetch DB_USER secret"
-    DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password 2>> "$LOG_FILE") || log "Failed to fetch DB_PASSWORD secret"
-    DB_HOST=$(gcloud secrets versions access latest --secret=db-host 2>> "$LOG_FILE") || log "Failed to fetch DB_HOST secret"
-    DB_NAME=$(gcloud secrets versions access latest --secret=db-name 2>> "$LOG_FILE") || log "Failed to fetch DB_NAME secret"
+    DB_USER=$(gcloud secrets versions access latest --secret=db-user 2>> "$LOG_FILE") || { log "Failed to fetch DB_USER secret"; exit 1; }
+    DB_PASSWORD=$(gcloud secrets versions access latest --secret=db-password 2>> "$LOG_FILE") || { log "Failed to fetch DB_PASSWORD secret"; exit 1; }
+    DB_HOST=$(gcloud secrets versions access latest --secret=db-host 2>> "$LOG_FILE") || { log "Failed to fetch DB_HOST secret"; exit 1; }
+    DB_NAME=$(gcloud secrets versions access latest --secret=db-name 2>> "$LOG_FILE") || { log "Failed to fetch DB_NAME secret"; exit 1; }
 
     log "Setting environment variables"
     export DB_USER DB_PASSWORD DB_HOST DB_NAME
 
-    log "Processing docker-compose.yml"
-    envsubst < "$HOME/cultcreative/docker-compose.yml" > "$HOME/cultcreative/docker-compose.processed.yml" || log "Failed to process docker-compose.yml"
+    # Form and export the DATABASE_URL
+    export DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}"
+    log "DATABASE_URL has been set (redacted for security)"
 
-    log "Starting Docker Compose"
-    sudo docker compose -f docker-compose.processed.yml up -d >> "$LOG_FILE" 2>&1 || {
-        log "Failed to start Docker Compose. Error: $?"
-    }
+    # Create a .env file for Docker Compose
+    cat << EOF > "$HOME/cultcreative/.env"
+DATABASE_URL=${DATABASE_URL}
+EOF
+
+    # log "Starting Docker Compose"
+    # sudo -E docker compose -f docker-compose.yml up -d >> "$LOG_FILE" 2>&1 || {
+    #     log "Failed to start Docker Compose. Error: $?"
+    # }
 
     log "Startup script completed successfully"
-EOF
 }
 
 # Run the main function
