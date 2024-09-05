@@ -8,13 +8,6 @@ log() {
     echo "[$timestamp] $1" | tee -a "$LOG_FILE"
 }
 
-run_command() {
-    if ! "$@"; then
-        log "Error: Command '$*' failed"
-        return 1
-    fi
-}
-
 main() {
     log "Starting startup script"
 
@@ -25,12 +18,12 @@ main() {
     export HOME=$TARGET_HOME
 
     log "Installing prerequisites"
-    run_command sudo apt-get install -y ca-certificates curl gnupg
+    sudo apt-get install -y ca-certificates curl gnupg
 
     # Add Docker's official GPG key:
-    run_command sudo install -m 0755 -d /etc/apt/keyrings
-    run_command sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    run_command sudo chmod a+r /etc/apt/keyrings/docker.asc
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     # Add the repository to Apt sources:
     echo \
@@ -39,12 +32,12 @@ main() {
         sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     log "Updating package lists again"
-    run_command sudo apt-get update
+    sudo apt-get update
 
     log "Installing Docker"
-    run_command sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    log "Installing Node.js v20.11.1 (LTS)"
+    log "Installing Node.js  version v20.11.1 (LTS)"
     NODE_VERSION="20.11.1"
     ARCH="x64"
     NODE_FILENAME="node-v${NODE_VERSION}-linux-${ARCH}.tar.xz"
@@ -69,19 +62,19 @@ main() {
     npm --version
 
     log "Installing Yarn globally"
-    run_command npm install -g yarn
+    npm install -g yarn
 
     log "Starting Docker service"
-    run_command sudo systemctl start docker
+    sudo systemctl start docker
 
     log "Enabling Docker service"
-    run_command sudo systemctl enable docker
+    sudo systemctl enable docker
 
     log "Checking Docker service status"
-    run_command sudo systemctl status docker
+    sudo systemctl status docker
 
     log "Setting up project directories"
-    run_command mkdir -p "$TARGET_HOME/cultcreative/nginx"
+    mkdir -p "$TARGET_HOME/cultcreative/nginx"
 
     log "Changing to cultcreative directory"
     cd "$TARGET_HOME/cultcreative"
@@ -92,25 +85,28 @@ main() {
     log "Cloning backend repository"
     git clone -b testing/production https://github.com/NxTech4021/cc-backend.git
 
-    log "Setting correct ownership for cultcreative directory"
-    sudo chown -R amin:amin "/home/amin/cultcreative"
+    log "Attempting to set correct ownership for cultcreative directory"
+    sudo chown -R amin:amin "$TARGET_HOME/cultcreative" 2>&1 | tee -a "$LOG_FILE" || log "Failed to change ownership of cultcreative directory"
 
-    log "Setting correct ownership for backend directory"
-    sudo chown -R amin:amin "/home/amin/cultcreative/cc-backend"
+    log "Checking cultcreative directory after chown"
+    ls -la "$TARGET_HOME/cultcreative" || log "Cannot list cultcreative directory after chown"
+
+    log "Attempting to set correct ownership for backend directory"
+    sudo chown -R amin:amin "$TARGET_HOME/cultcreative/cc-backend" 2>&1 | tee -a "$LOG_FILE" || log "Failed to change ownership of backend directory"
 
     log "Creating temporary nginx directory"
-    run_command mkdir -p /tmp/nginx
+     mkdir -p /tmp/nginx
 
     log "Fetching and decoding Nginx config"
-    run_command curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-config" | base64 -d > /tmp/nginx/default.conf 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx config"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-config" | base64 -d > /tmp/nginx/default.conf 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx config"
 
     log "Fetching and decoding Nginx Dockerfile"
-    run_command curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-dockerfile" | base64 -d > /tmp/nginx/Dockerfile 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx Dockerfile"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/nginx-dockerfile" | base64 -d > /tmp/nginx/Dockerfile 2>> "$LOG_FILE" || log "Failed to fetch/decode Nginx Dockerfile"
 
     log "Fetching and decoding docker-compose.yml"
-    run_command curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/docker-compose" | base64 -d > /tmp/docker-compose.yml 2>> "$LOG_FILE" || log "Failed to fetch/decode docker-compose.yml"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/docker-compose" | base64 -d > /tmp/docker-compose.yml 2>> "$LOG_FILE" || log "Failed to fetch/decode docker-compose.yml"
 
-    log "Copying Nginx files"
+    log "Copying Nginx filess"
     cp /tmp/nginx/default.conf "$TARGET_HOME/cultcreative/nginx/" || log "Failed to copy Nginx config"
     cp /tmp/nginx/Dockerfile "$TARGET_HOME/cultcreative/nginx/" || log "Failed to copy Nginx Dockerfile"
 
@@ -135,10 +131,8 @@ main() {
 DATABASE_URL=${DATABASE_URL}
 EOF
 
-    # log "Starting Docker Compose"
-    # sudo -E docker compose -f docker-compose.yml up -d >> "$LOG_FILE" 2>&1 || {
-    #     log "Failed to start Docker Compose. Error: $?"
-    # }
+    log "Starting Docker Compose"
+    sudo -E docker compose -f docker-compose.yml up -d >> "$LOG_FILE" 2>&1
 
     log "Startup script completed successfully"
 }
