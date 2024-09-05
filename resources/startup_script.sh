@@ -131,7 +131,7 @@ main() {
 DATABASE_URL=${DATABASE_URL}
 EOF
 
-    log "Starting Docker Compose"
+    log "Starting DockerCompose"
     sudo -E docker compose -f docker-compose.yml up -d >> "$LOG_FILE" 2>&1
 
     log "Startup script completed successfully"
