@@ -21,9 +21,10 @@ resource "google_compute_instance" "compute_engine_instance" {
   metadata_startup_script = file("${path.module}/${var.instance_startup_script}")
 
   metadata = {
-  nginx-config     = filebase64("${path.module}/${var.instance_nginx_config_path}")
-  nginx-dockerfile = filebase64("${path.module}/${var.instance_nginx_dockerfile_path}")
-  docker-compose   = filebase64("${path.module}/${var.instance_docker_compose_path}")
+    nginx-config     = filebase64("${path.module}/${var.instance_nginx_config_path}")
+    nginx-dockerfile = filebase64("${path.module}/${var.instance_nginx_dockerfile_path}")
+    docker-compose   = filebase64("${path.module}/${var.instance_docker_compose_path}")
+    node-exporter-service = filebase64("${path.module}/node_exporter.service")
   }
 
   tags = var.instance_tags

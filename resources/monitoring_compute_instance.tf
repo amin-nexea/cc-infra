@@ -21,7 +21,8 @@ resource "google_compute_instance" "monitoring_instance" {
   metadata_startup_script = file("${path.module}/${var.monitoring_instance_startup_script}")
 
   metadata = {
-  
+    prometheus-config = filebase64("${path.module}/prometheus.yml")
+    prometheus-service = filebase64("${path.module}/prometheus.service")
   }
 
   tags = var.monitoring_instance_tags

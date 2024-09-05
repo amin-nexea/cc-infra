@@ -20,6 +20,26 @@ main() {
     log "Installing prerequisites"
     sudo apt-get install -y ca-certificates curl gnupg
 
+    log "Installing and configuring Node Exporter"
+    wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz
+    tar xvfz node_exporter-1.3.1.linux-amd64.tar.gz
+    sudo mv node_exporter-1.3.1.linux-amd64/node_exporter /usr/local/bin/
+    rm -rf node_exporter-1.3.1.linux-amd64*
+
+    log "Fetching Node Exporter service file"
+    curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/node-exporter-service" | base64 -d > /tmp/node_exporter.service 2>> "$LOG_FILE" || log "Failed to fetch/decode Node Exporter service file"
+
+    log "Installing Node Exporter service"
+    sudo mv /tmp/node_exporter.service /etc/systemd/system/node_exporter.service
+
+    log "Creating Node Exporter user"
+    sudo useradd -rs /bin/false node_exporter
+
+    log "Starting Node Exporter service"
+    sudo systemctl daemon-reload
+    sudo systemctl start node_exporter
+    sudo systemctl enable node_exporter
+
     # Add Docker's official GPG key:
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
