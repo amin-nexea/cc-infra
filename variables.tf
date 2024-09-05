@@ -263,3 +263,53 @@ variable "db_secret_names" {
   type    = set(string)
 }
 
+variable "monitoring_instance_name" {
+  type        = string
+  description = "The name of the monitoring instance"
+}
+
+variable "monitoring_instance_machine_type" {
+  type        = string
+  description = "The machine type of the monitoring instance"
+}
+
+variable "monitoring_instance_zone" {
+  type        = string
+  description = "The zone where the monitoring instance will be created"
+}
+
+variable "monitoring_instance_image" {
+  type        = string
+  description = "The boot disk image for the monitoring instance"
+}
+
+variable "monitoring_instance_disk_size" {
+  type        = number
+  description = "The size of the boot disk for the monitoring instance in GB"
+}
+
+variable "monitoring_instance_disk_type" {
+  type        = string
+  description = "The type of the boot disk for the monitoring instance"
+}
+
+variable "monitoring_instance_startup_script" {
+  type        = string
+  description = "The path to the startup script file for the monitoring instance"
+}
+
+variable "monitoring_instance_tags" {
+  type        = list(string)
+  description = "The network tags to apply to the monitoring instance"
+}
+
+variable "monitoring_instance_sa_id" {
+  type        = string
+  description = "The ID of the service account for the monitoring instance"
+}
+
+variable "monitoring_instance_sa_display_name" {
+  type        = string
+  description = "The display name of the service account for the monitoring instance"
+}
+
