@@ -11,12 +11,12 @@ terraform {
 module "resources" {
   source = "./resources"
 
-  project_id                  = var.project_id
-  region                      = var.region
-  apis_to_enable              = var.apis_to_enable
-  vpc_name                    = var.vpc_name
-  vpc_auto_create_subnetworks = var.vpc_auto_create_subnetworks
-  vpc_description             = var.vpc_description
+  project_id                            = var.project_id
+  region                                = var.region
+  apis_to_enable                        = var.apis_to_enable
+  vpc_name                              = var.vpc_name
+  vpc_auto_create_subnetworks           = var.vpc_auto_create_subnetworks
+  vpc_description                       = var.vpc_description
   db_instance_name                      = var.db_instance_name     
   db_version                            = var.db_version 
   db_edition                            = var.db_edition  
@@ -63,7 +63,16 @@ module "resources" {
   firewall_protocol                     = var.firewall_protocol
   firewall_ports                        = var.firewall_ports
   firewall_source_ranges                = var.firewall_source_ranges
-
+  monitoring_instance_name              = var.monitoring_instance_name
+  monitoring_instance_machine_type      = var.monitoring_instance_machine_type
+  monitoring_instance_zone              = var.monitoring_instance_zone
+  monitoring_instance_image             = var.monitoring_instance_image
+  monitoring_instance_disk_size         = var.monitoring_instance_disk_size
+  monitoring_instance_disk_type         = var.monitoring_instance_disk_type
+  monitoring_instance_startup_script    = var.monitoring_instance_startup_script
+  monitoring_instance_tags              = var.monitoring_instance_tags
+  monitoring_instance_sa_id             = var.monitoring_instance_sa_id
+  monitoring_instance_sa_display_name   = var.monitoring_instance_sa_display_name
 }
 
 

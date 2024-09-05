@@ -33,20 +33,31 @@ variable "db_secret_names" {}
 variable "db_name" {} 
 variable "db_user" {} 
 variable "db_password" {} 
-variable "instance_name"{}                         
-variable "instance_machine_type"{}                 
-variable "instance_zone"{}                         
-variable "instance_image"{}                        
-variable "instance_disk_size"{}                    
-variable "instance_disk_type"{}                    
-variable "instance_startup_script"{}               
-variable "instance_nginx_config_path"{}            
-variable "instance_nginx_dockerfile_path"{}        
-variable "instance_docker_compose_path"{}          
-variable "instance_tags"{}                         
-variable "instance_service_account_scopes"{}     
-variable "instance_service_account_id"{}    
-variable "firewall_name"{}       
-variable "firewall_protocol"{}       
-variable "firewall_ports"{}       
-variable "firewall_source_ranges"{}           
+variable "instance_name" {}                         
+variable "instance_machine_type" {}                 
+variable "instance_zone" {}                         
+variable "instance_image" {}                        
+variable "instance_disk_size" {}                    
+variable "instance_disk_type" {}                     
+variable "instance_startup_script" {}               
+variable "instance_nginx_config_path" {}            
+variable "instance_nginx_dockerfile_path" {}        
+variable "instance_docker_compose_path" {}          
+variable "instance_tags" {}                         
+variable "instance_service_account_scopes" {}     
+variable "instance_service_account_id" {}    
+variable "firewall_name" {}       
+variable "firewall_protocol" {}       
+variable "firewall_ports" {}       
+variable "firewall_source_ranges" {}           
+variable "monitoring_instance_name" {}           
+variable "monitoring_instance_machine_type" {}           
+variable "monitoring_instance_zone" {}           
+variable "monitoring_instance_image" {}           
+variable "monitoring_instance_disk_size" {}           
+variable "monitoring_instance_disk_type" {}           
+variable "monitoring_instance_startup_script" {}           
+variable "monitoring_instance_tags" {}           
+variable "monitoring_instance_sa_id" {}           
+variable "monitoring_instance_sa_display_name" {}           
+        
