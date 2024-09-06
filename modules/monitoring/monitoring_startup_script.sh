@@ -35,7 +35,7 @@ main() {
     rm -rf prometheus-*
 
     # Configure Prometheus
-    log "Configuring Prometheus"
+    log "Configuring Prometheuss"
     sudo cp /tmp/prometheus.yml /etc/prometheus/prometheus.yml
 
     # Create Prometheus systemd service

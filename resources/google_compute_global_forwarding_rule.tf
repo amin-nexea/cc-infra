@@ -102,3 +102,38 @@ resource "google_compute_managed_ssl_certificate" "default" {
     create_before_destroy = true
   }
 }
+
+// PROMETHEUS
+
+# Node Exporter forwarding rule
+resource "google_compute_global_forwarding_rule" "node_exporter_forwarding_rule" {
+  name       = "node-exporter-global-rule"
+  target     = google_compute_target_tcp_proxy.node_exporter_proxy.id
+  port_range = "9100"
+}
+
+resource "google_compute_target_tcp_proxy" "node_exporter_proxy" {
+  name            = "node-exporter-proxy"
+  backend_service = google_compute_backend_service.node_exporter_backend_service.id
+}
+
+resource "google_compute_backend_service" "node_exporter_backend_service" {
+  name        = "node-exporter-backend-service"
+  protocol    = "TCP"
+  timeout_sec = 10
+  health_checks = [google_compute_health_check.node_exporter_health_check.id]
+
+  backend {
+    group = google_compute_instance_group.instance_group.id
+  }
+}
+
+resource "google_compute_health_check" "node_exporter_health_check" {
+  name               = "node-exporter-health-check"
+  timeout_sec        = 5
+  check_interval_sec = 5
+
+  tcp_health_check {
+    port = 9100
+  }
+}
